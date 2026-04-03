@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>古风同人图 · 选择剧集</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&display=swap');
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'Noto Serif SC', 'STSong', serif;
+      background: #08060f;
+    }
+
+    /* ─── 全屏背景 ─── */
+    .bg { 
+      position: fixed; inset: 0; z-index: 0;
+      overflow: hidden;
+    }
+    
+    .bg-video {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      min-width: 100%;
+      min-height: 100%;
+      width: auto;
+      height: auto;
+      transform: translate(-50%, -50%);
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+    }
+    
+    .bg-video.active {
+      opacity: 1;
+    }
+    
+
+
+    /* ─── 导航栏 ─── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+      height: 68px;
+      display: flex; align-items: center;
+      padding: 0 48px;
+      background: linear-gradient(
+        to bottom,
+        rgba(8,5,16,0.82) 0%,
+        rgba(12,8,22,0.68) 100%
+      );
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      gap: 0;
+    }
+
+    /* 导航底部装饰线：双线 */
+    .nav::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(200,160,100,0.15) 15%,
+        rgba(200,160,100,0.45) 40%,
+        rgba(220,180,120,0.55) 50%,
+        rgba(200,160,100,0.45) 60%,
+        rgba(200,160,100,0.15) 85%,
+        transparent 100%
+      );
+    }
+    .nav::before {
+      content: '';
+      position: absolute; bottom: -3px; left: 15%; right: 15%;
+      height: 1px;
+      background: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(200,160,100,0.08) 20%,
+        rgba(200,160,100,0.2) 50%,
+        rgba(200,160,100,0.08) 80%,
+        transparent 100%
+      );
+    }
+
+    /* Logo */
+    .nav-logo {
+      display: flex; align-items: center;
+      text-decoration: none; flex-shrink: 0;
+      margin-right: 36px;
+      position: relative;
+    }
+    .logo-img { height: 72px; width: auto; display: block; }
+
+    /* 导航中部下拉 */
+    .nav-center { position: relative; flex-shrink: 0; }
+
+    .dropdown-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 22px; height: 36px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(200,160,100,0.3);
+      border-radius: 6px;
+      color: rgba(255,240,210,0.75); font-family: inherit;
+      font-size: 15px; letter-spacing: 0.22em;
+      cursor: pointer;
+      transition: background 0.22s, border-color 0.22s, color 0.22s;
+      white-space: nowrap;
+      position: relative;
+    }
+    .dropdown-btn:hover {
+      background: rgba(200,160,100,0.1);
+      border-color: rgba(200,160,100,0.65);
+      color: rgba(255,240,210,1);
+    }
+    .dropdown-btn.open {
+      background: rgba(200,160,100,0.12);
+      border-color: rgba(220,180,120,0.8);
+      color: #fff;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    .dropdown-btn .btn-diamond {
+      font-size: 7px; color: rgba(200,160,100,0.6);
+      transition: color 0.22s;
+    }
+    .dropdown-btn:hover .btn-diamond,
+    .dropdown-btn.open .btn-diamond { color: rgba(220,180,120,0.9); }
+    .dropdown-btn .arrow {
+      font-size: 8px; color: rgba(200,160,100,0.5);
+      transition: transform 0.2s, color 0.2s;
+      margin-left: 2px;
+    }
+    .dropdown-btn.open .arrow {
+      transform: rotate(180deg);
+      color: rgba(220,180,120,0.8);
+    }
+
+    .dropdown-menu {
+      position: absolute; top: 100%; left: 0;
+      min-width: 100%;
+      background: rgba(8,5,16,0.95);
+      border: 1px solid rgba(200,160,100,0.35);
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      overflow: hidden;
+      opacity: 0; pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity 0.18s, transform 0.18s;
+    }
+    .dropdown-menu.open {
+      opacity: 1; pointer-events: auto;
+      transform: translateY(0);
+    }
+    .dropdown-item {
+      display: flex; align-items: center; justify-content: center;
+      padding: 11px 20px;
+      font-size: 13px; letter-spacing: 0.22em; color: rgba(255,240,210,0.5);
+      cursor: pointer; transition: color 0.15s, background 0.15s;
+      border-bottom: 1px solid rgba(200,160,100,0.1);
+    }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover { color: rgba(255,240,210,0.95); background: rgba(200,160,100,0.08); }
+    .dropdown-item.on { color: rgba(255,240,210,0.95); }
+    .dropdown-item.on::before {
+      content: '◆'; margin-right: 8px; font-size: 5px;
+      color: rgba(200,160,100,0.8); vertical-align: middle;
+    }
+
+    /* 右侧头像 */
+    .nav-avatar-wrapper {
+      margin-left: auto;
+      position: relative;
+    }
+    
+    .nav-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid rgba(200,160,100,0.4);
+      cursor: pointer;
+      transition: all 0.22s;
+      object-fit: cover;
+    }
+    
+    .nav-avatar:hover {
+      border-color: rgba(220,180,120,0.8);
+      box-shadow: 0 0 12px rgba(200,160,100,0.3);
+    }
+    
+    .avatar-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 140px;
+      background: rgba(8,5,16,0.95);
+      border: 1px solid rgba(200,160,100,0.35);
+      border-radius: 6px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity 0.18s, transform 0.18s;
+    }
+    
+    .avatar-dropdown.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    
+    .avatar-dropdown-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 20px;
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      color: rgba(255,240,210,0.6);
+      cursor: default;
+      border-bottom: 1px solid rgba(200,160,100,0.1);
+    }
+    
+    .avatar-dropdown-item:last-child {
+      border-bottom: none;
+    }
+    
+    .avatar-dropdown-item.login-btn {
+      cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+    }
+    
+    .avatar-dropdown-item.login-btn:hover {
+      color: rgba(255,240,210,0.95);
+      background: rgba(200,160,100,0.08);
+    }
+    
+
+
+    /* ─── 左下角装饰 ─── */
+    .deco-corner {
+      position: fixed; z-index: 200;
+      pointer-events: none;
+    }
+    .deco-corner.bl {
+      bottom: 24px; left: 32px;
+      width: 60px; height: 60px;
+    }
+    .deco-corner.br {
+      bottom: 24px; right: 32px;
+      width: 60px; height: 60px;
+    }
+    .deco-corner svg { width: 100%; height: 100%; opacity: 0.35; }
+
+
+
+
+
+    /* ─── 底部进度条 ─── */
+    .prog {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
+      height: 2px; background: rgba(255,255,255,0.04);
+    }
+    .prog-fill {
+      height: 100%; width: 33.33%;
+      background: linear-gradient(to right, rgba(180,120,160,0.8), rgba(200,160,100,0.8));
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg">
+    <video class="bg-video active" autoplay muted playsinline preload="auto">
+      <source src="assets/shipin/1.mp4" type="video/mp4">
+    </video>
+    <video class="bg-video" muted playsinline preload="none">
+      <source src="assets/shipin/2.mp4" type="video/mp4">
+    </video>
+    <video class="bg-video" muted playsinline preload="none">
+      <source src="assets/shipin/3.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <nav class="nav">
+    <a class="nav-logo" href="index.html">
+      <img class="logo-img" src="assets/logo.png" alt="拾梦录" />
+    </a>
+
+    <div class="nav-center">
+      <button class="dropdown-btn" id="dropBtn">
+        <span class="btn-diamond">◆</span>
+        <span id="dropLabel">IP剧集</span>
+        <span class="arrow">▾</span>
+      </button>
+      <div class="dropdown-menu" id="dropMenu">
+        <div class="dropdown-item on" data-i="0">《逐风玉恋》</div>
+      </div>
+    </div>
+
+    <div class="nav-avatar-wrapper">
+      <img class="nav-avatar" id="avatarImg" src="assets/touxiang.png" alt="头像" />
+      <div class="avatar-dropdown" id="avatarDropdown">
+        <div class="avatar-dropdown-item">未登录</div>
+        <div class="avatar-dropdown-item login-btn" id="loginBtn">去登录</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="prog"><div class="prog-fill"></div></div>
+
+  <!-- 登录弹窗 -->
+  <div id="loginModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div style="width:420px;background:rgba(8,5,16,0.97);border:1px solid rgba(200,160,100,0.4);border-radius:12px;padding:40px 36px;position:relative;font-family:'Noto Serif SC','STSong',serif;">
+      <button onclick="document.getElementById('loginModal').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;color:rgba(200,160,100,0.6);font-size:20px;cursor:pointer;">×</button>
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="font-size:13px;color:rgba(200,160,100,0.6);letter-spacing:0.3em;margin-bottom:8px;">拾梦录</div>
+        <div style="font-size:20px;font-weight:300;color:rgba(255,240,210,0.95);letter-spacing:0.2em;">保存你的古风形象</div>
+        <div style="font-size:13px;color:rgba(200,160,100,0.5);letter-spacing:0.15em;margin-top:6px;">开启专属故事</div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;gap:0;margin-bottom:10px;">
+          <input id="phoneInput" type="tel" placeholder="请输入手机号" maxlength="11" style="flex:1;height:46px;background:rgba(255,255,255,0.04);border:1px solid rgba(200,160,100,0.3);border-right:none;border-radius:6px 0 0 6px;color:rgba(255,240,210,0.9);font-family:inherit;font-size:14px;padding:0 14px;outline:none;"/>
+          <button id="codeBtn" style="width:110px;height:46px;background:rgba(200,160,100,0.12);border:1px solid rgba(200,160,100,0.3);border-radius:0 6px 6px 0;color:rgba(220,180,120,0.9);font-family:inherit;font-size:13px;cursor:pointer;white-space:nowrap;" onclick="sendCode()">获取验证码</button>
+        </div>
+        <input id="codeInput" type="text" placeholder="请输入验证码" maxlength="6" style="width:100%;height:46px;background:rgba(255,255,255,0.04);border:1px solid rgba(200,160,100,0.3);border-radius:6px;color:rgba(255,240,210,0.9);font-family:inherit;font-size:14px;padding:0 14px;outline:none;"/>
+      </div>
+      <button onclick="doLogin()" style="width:100%;height:50px;background:linear-gradient(135deg,rgba(200,160,100,0.25),rgba(180,120,80,0.2));border:1px solid rgba(220,180,120,0.6);border-radius:6px;color:rgba(255,240,210,0.95);font-family:inherit;font-size:16px;letter-spacing:0.35em;cursor:pointer;margin-bottom:20px;">✦ 登 录 ✦</button>
+      <div style="text-align:center;color:rgba(200,160,100,0.35);font-size:12px;letter-spacing:0.2em;margin-bottom:16px;">——— 或 ———</div>
+      <button onclick="doLogin()" style="width:100%;height:46px;background:rgba(7,193,96,0.15);border:1px solid rgba(7,193,96,0.35);border-radius:6px;color:rgba(7,193,96,0.9);font-family:inherit;font-size:14px;letter-spacing:0.2em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;"><span style="font-size:18px;">💬</span> 微信一键登录</button>
+    </div>
+  </div>
+
+  <script>
+    function sendCode() {
+      const phone = document.getElementById('phoneInput').value.trim();
+      if (phone.length !== 11) { alert('请输入正确的手机号'); return; }
+      const btn = document.getElementById('codeBtn');
+      let t = 60; btn.disabled = true;
+      const timer = setInterval(() => { t--; btn.textContent = t + 's后重发'; if (t <= 0) { clearInterval(timer); btn.disabled = false; btn.textContent = '获取验证码'; } }, 1000);
+    }
+    function doLogin() {
+      localStorage.setItem('isLoggedIn', 'true');
+      document.getElementById('loginModal').style.display = 'none';
+    }
+  </script>
+
+  <script>
+    const dramas = [
+      { label:'《逐风玉恋》', bg:'s0' },
+    ];
+
+    let cur = 0;
+    const dropBtn  = document.getElementById('dropBtn');
+    const dropMenu = document.getElementById('dropMenu');
+    const dropLabel= document.getElementById('dropLabel');
+    const items    = document.querySelectorAll('.dropdown-item');
+    const videos   = document.querySelectorAll('.bg-video');
+    const avatarImg = document.getElementById('avatarImg');
+    const avatarDropdown = document.getElementById('avatarDropdown');
+    const loginBtn = document.getElementById('loginBtn');
+    let currentVideoIndex = 0;
+
+    videos.forEach((video, index) => {
+      video.addEventListener('loadeddata', () => {
+        if (index === 0) {
+          video.play();
+        }
+      });
+
+      video.addEventListener('ended', () => {
+        if (index === currentVideoIndex) {
+          video.classList.remove('active');
+          
+          currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+          const nextVideo = videos[currentVideoIndex];
+          
+          nextVideo.currentTime = 0;
+          nextVideo.classList.add('active');
+          nextVideo.load();
+          nextVideo.play();
+        }
+      });
+    });
+
+    dropBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = dropMenu.classList.toggle('open');
+      dropBtn.classList.toggle('open', open);
+    });
+
+    document.addEventListener('click', () => {
+      dropMenu.classList.remove('open');
+      dropBtn.classList.remove('open');
+    });
+
+    items.forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const i = +el.dataset.i;
+        cur = i;
+        items.forEach((x, j) => x.classList.toggle('on', j === i));
+        // dropLabel固定显示IP剧集
+        dropMenu.classList.remove('open');
+        dropBtn.classList.remove('open');
+        
+        localStorage.setItem('selectedDrama', JSON.stringify(dramas[i]));
+        localStorage.setItem('selectedDramaIndex', i);
+        window.location.href = 'step2.html';
+      });
+    });
+
+    avatarImg.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = avatarDropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', () => {
+      avatarDropdown.classList.remove('open');
+    });
+
+    loginBtn.addEventListener('click', () => {
+      document.getElementById('loginModal').style.display = 'flex';
+    });
+  </script>
+</body>
+</html>
