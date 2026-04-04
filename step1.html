@@ -263,6 +263,71 @@
 
 
 
+    /* ─── 中央剧集入口 ─── */
+    .center-entry {
+      position: fixed;
+      bottom: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      animation: fadeInUp 0.9s ease-out 0.3s both;
+    }
+    .entry-label {
+      font-size: 12px;
+      letter-spacing: 0.45em;
+      color: rgba(200,160,100,0.55);
+    }
+    .entry-title {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: 0.35em;
+      color: rgba(255,240,210,0.95);
+      text-shadow: 0 2px 24px rgba(0,0,0,0.8);
+      white-space: nowrap;
+    }
+    .entry-divider {
+      width: 120px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(200,160,100,0.5), transparent);
+    }
+    .entry-btn {
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 48px;
+      height: 54px;
+      background: linear-gradient(135deg, rgba(200,160,100,0.22), rgba(180,120,80,0.18));
+      border: 1px solid rgba(220,180,120,0.65);
+      border-radius: 8px;
+      color: rgba(255,240,210,0.95);
+      font-family: inherit;
+      font-size: 18px;
+      letter-spacing: 0.4em;
+      cursor: pointer;
+      transition: all 0.28s ease;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 24px rgba(200,160,100,0.12);
+      white-space: nowrap;
+    }
+    .entry-btn:hover {
+      background: linear-gradient(135deg, rgba(220,180,120,0.32), rgba(200,140,80,0.28));
+      border-color: rgba(240,200,140,0.9);
+      box-shadow: 0 12px 48px rgba(0,0,0,0.5), 0 0 40px rgba(200,160,100,0.25);
+      transform: translateY(-3px);
+    }
+    .entry-btn-diamond { font-size: 10px; color: rgba(220,180,120,0.8); }
+    .entry-btn-arrow { font-size: 16px; color: rgba(220,180,120,0.7); transition: transform 0.28s; }
+    .entry-btn:hover .entry-btn-arrow { transform: translateX(4px); }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(24px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
     /* ─── 底部进度条 ─── */
     .prog {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
@@ -311,6 +376,18 @@
   </nav>
 
   <div class="prog"><div class="prog-fill"></div></div>
+
+  <!-- 中央剧集入口 -->
+  <div class="center-entry" id="centerEntry">
+    <div class="entry-label">当前剧集</div>
+    <div class="entry-title">《逐风玉恋》</div>
+    <div class="entry-divider"></div>
+    <button class="entry-btn" id="enterBtn">
+      <span class="entry-btn-diamond">✦</span>
+      <span>进入剧集</span>
+      <span class="entry-btn-arrow">→</span>
+    </button>
+  </div>
 
   <!-- 登录弹窗 -->
   <div id="loginModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
@@ -424,6 +501,13 @@
 
     loginBtn.addEventListener('click', () => {
       document.getElementById('loginModal').style.display = 'flex';
+    });
+
+    // 中央进入按钮：直接进入第一个（也是唯一）剧集
+    document.getElementById('enterBtn').addEventListener('click', () => {
+      localStorage.setItem('selectedDrama', JSON.stringify(dramas[0]));
+      localStorage.setItem('selectedDramaIndex', 0);
+      window.location.href = 'step2.html';
     });
   </script>
 </body>
