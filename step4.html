@@ -430,46 +430,70 @@
       });
     });
 
+    const API_BASE = '';  // 同域，走 nginx 代理
+
+    function showLimitUI(remaining) {
+      document.querySelector('.ink-animation').style.display = 'none';
+      const wt = document.querySelector('.waiting-text');
+      const wh = document.querySelector('.waiting-hint');
+      wt.innerHTML = '<span style="color:rgba(220,160,80,0.9);font-size:18px;letter-spacing:0.3em;">免费次数已用完</span>';
+      wh.innerHTML = `每个 IP 最多免费生成 2 次，你已用完全部次数。<br>
+        <span style="font-size:13px;color:rgba(200,160,100,0.5);letter-spacing:0.15em;">如需继续使用，请联系管理员开通权限。</span>`;
+      wh.style.lineHeight = '2';
+      wh.style.marginTop = '20px';
+    }
+
     async function startGeneration() {
       const userPhoto = localStorage.getItem('userPhoto');
       const characterName = localStorage.getItem('characterName') || '云笙';
       const dramaIndex = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
-      
+
       if (!userPhoto) {
         console.error('未找到用户照片');
         alert('未找到照片，请重新上传');
-        setTimeout(() => {
-          window.location.href = 'step3.html';
-        }, 1000);
+        setTimeout(() => { window.location.href = 'step3.html'; }, 1000);
         return;
+      }
+
+      // ── IP 次数检查 ──
+      try {
+        const limitRes = await fetch(API_BASE + '/api/check-limit');
+        const limitData = await limitRes.json();
+        if (!limitData.allowed) {
+          showLimitUI(0);
+          return;
+        }
+      } catch (e) {
+        console.warn('限制检查失败，跳过:', e.message);
       }
 
       try {
         const photoBase64 = userPhoto.includes(',') ? userPhoto.split(',')[1] : userPhoto;
-        
+
         const result = await generateAncientStyleImage(photoBase64, dramaIndex, characterName);
-        
+
         if (result.success && result.imageUrl) {
           localStorage.setItem('generatedImage', result.imageUrl);
           localStorage.setItem('generatedPrompt', result.prompt || '');
           localStorage.setItem('generatedStyle', result.style || '');
-          
-          setTimeout(() => {
-            window.location.href = 'step4b.html';
-          }, 500);
+
+          // ── 生成成功后记录次数 ──
+          try {
+            await fetch(API_BASE + '/api/record-generation', { method: 'POST' });
+          } catch (e) {
+            console.warn('记录次数失败:', e.message);
+          }
+
+          setTimeout(() => { window.location.href = 'step4b.html'; }, 500);
         } else {
           console.error('生成失败:', result.error);
           alert('生成失败: ' + (result.error || '未知错误'));
-          setTimeout(() => {
-            window.location.href = 'step3.html';
-          }, 1500);
+          setTimeout(() => { window.location.href = 'step3.html'; }, 1500);
         }
       } catch (error) {
         console.error('生成过程出错:', error);
         alert('生成过程出错: ' + error.message);
-        setTimeout(() => {
-          window.location.href = 'step3.html';
-        }, 1500);
+        setTimeout(() => { window.location.href = 'step3.html'; }, 1500);
       }
     }
 
