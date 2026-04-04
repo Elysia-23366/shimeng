@@ -266,7 +266,7 @@
     const dramas = ['《逐风玉恋》'];
 
     const generatedImage = localStorage.getItem('generatedImage') || 'assets/moren.png';
-    const cpImage = 'assets/fenshou.png';
+    const cpImage = localStorage.getItem('generatedCPImage') || 'assets/fenshou.png';
     const novel = localStorage.getItem('generatedNovel') || '月色如水，洒落在长安城的青石板上。云笙独立桥头，衣袂随风轻扬，手中那枚玉佩泛着温润的光泽。\n\n"你可知，这枚玉佩是我母亲留给我的唯一念想。"\n\n他的声音低沉如大提琴，在夜风中显得格外清晰。身后的桃花纷纷扬扬，落了满肩，像极了那年初见时的模样。\n\n她垂眸不语，只是轻轻握住了他的手。十指相扣间，仿佛前世今生的缘分都在此刻交汇……';
     const flowerName = localStorage.getItem('characterFlowerName') || '云笙';
     const cpName = localStorage.getItem('selectedCPName') || '';
@@ -277,6 +277,7 @@
     // 图片
     document.getElementById('imgGenerated').src = generatedImage;
     document.getElementById('imgCP').src = cpImage;
+    document.getElementById('blurBgImg').src = cpImage;
     document.getElementById('novelPreview').textContent = novel.slice(0, 180);
 
     // 头像
