@@ -22,13 +22,10 @@
 
     .bg-video {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      min-width: 100%;
-      min-height: 100%;
-      width: auto;
-      height: auto;
-      transform: translate(-50%, -50%);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
       opacity: 0;
       transition: opacity 1.5s ease-in-out;
@@ -406,9 +403,6 @@
 
   <div class="bg">
     <video class="bg-video active" autoplay muted playsinline preload="auto">
-      <source src="assets/shipin/1.mp4" type="video/mp4">
-    </video>
-    <video class="bg-video" muted playsinline preload="none">
       <source src="assets/shipin/2.mp4" type="video/mp4">
     </video>
     <video class="bg-video" muted playsinline preload="none">
