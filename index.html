@@ -4,8 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>拾梦录 · 古风AI角色生成</title>
+  <!-- 预连接 Google Fonts，减少 DNS 查询延迟 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&display=swap">
+  <!-- 预加载 logo，让浏览器优先获取 -->
+  <link rel="preload" as="image" href="assets/logo.webp" type="image/webp">
+  <link rel="preload" as="image" href="assets/logo.png" imagesrcset="assets/logo.webp" imagesizes="auto">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&display=swap');
 
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -225,7 +231,12 @@
 
   <div class="container">
     <div class="logo-container">
-      <img class="logo-img" src="assets/logo.png" alt="拾梦录" />
+      <!-- 使用 picture 优先加载 WebP，自动回退 PNG -->
+      <picture>
+        <source srcset="assets/logo.webp" type="image/webp">
+        <img class="logo-img" src="assets/logo.png" alt="拾梦录"
+             width="376" height="240" loading="eager" fetchpriority="high">
+      </picture>
     </div>
 
     <p class="subtitle">旧梦可拾，此刻成录</p>
@@ -242,28 +253,62 @@
     const videos = document.querySelectorAll('.bg-video');
     let currentVideoIndex = 0;
 
+    // 预加载指定索引的视频
+    function preloadVideo(index) {
+      const video = videos[index];
+      if (video.preload === 'none') {
+        video.preload = 'auto';
+        video.load();
+      }
+    }
+
+    // 切换到指定视频
+    function switchToVideo(nextIndex) {
+      const current = videos[currentVideoIndex];
+      const next = videos[nextIndex];
+
+      current.classList.remove('active');
+      currentVideoIndex = nextIndex;
+      next.classList.add('active');
+
+      // 直接 play()，视频已提前预加载，无需再 load()
+      next.currentTime = 0;
+      const playPromise = next.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // 若未预加载完成则等 canplay 后再播
+          next.addEventListener('canplay', () => next.play(), { once: true });
+        });
+      }
+
+      // 再预加载下下个视频
+      const afterNext = (nextIndex + 1) % videos.length;
+      preloadVideo(afterNext);
+    }
+
     videos.forEach((video, index) => {
-      video.addEventListener('loadeddata', () => {
-        if (index === 0) {
-          video.play();
+      video.addEventListener('ended', () => {
+        if (index === currentVideoIndex) {
+          switchToVideo((currentVideoIndex + 1) % videos.length);
         }
       });
 
-      video.addEventListener('ended', () => {
-        if (index === currentVideoIndex) {
-          video.classList.remove('active');
-          
-          currentVideoIndex = (currentVideoIndex + 1) % videos.length;
-          const nextVideo = videos[currentVideoIndex];
-          
-          nextVideo.currentTime = 0;
-          nextVideo.classList.add('active');
-          nextVideo.load();
-          nextVideo.play();
+      // 当前视频播放到 80% 时，提前预加载下一个
+      video.addEventListener('timeupdate', () => {
+        if (index === currentVideoIndex && video.duration > 0) {
+          const progress = video.currentTime / video.duration;
+          if (progress > 0.8) {
+            preloadVideo((currentVideoIndex + 1) % videos.length);
+          }
         }
       });
     });
-    
+
+    // 第一个视频已设置 preload="auto"，直接播放
+    videos[0].play().catch(() => {
+      videos[0].addEventListener('canplay', () => videos[0].play(), { once: true });
+    });
+
     startBtn.addEventListener('click', () => {
       window.location.href = 'step1.html';
     });
