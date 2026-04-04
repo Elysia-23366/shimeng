@@ -109,20 +109,35 @@ async function _uploadPhoto(base64Str, apiKey) {
 
 /**
  * 调用 Dify Workflow（blocking 模式），返回 outputs 对象
+ * 默认 90 秒超时，超时后抛错让调用方处理
  */
-async function _runWorkflow(apiKey, inputs) {
-  const res = await fetch(`${DIFY_BASE}/workflows/run`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      inputs,
-      response_mode: 'blocking',
-      user: _getUserId(),
-    }),
-  });
+async function _runWorkflow(apiKey, inputs, timeoutMs = 90000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  let res;
+  try {
+    res = await fetch(`${DIFY_BASE}/workflows/run`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        inputs,
+        response_mode: 'blocking',
+        user: _getUserId(),
+      }),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error('请求超时（超过 90 秒），请检查网络或稍后重试');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!res.ok) {
     const msg = await res.text();
@@ -223,25 +238,37 @@ async function generateAncientStyleImage(photoBase64, dramaIndex, characterName)
 async function generateNovelStream({ flowerName, relationship, plotDirection, dramaIndex, characterName }, onChunk) {
   const juji = DRAMA_NAMES[dramaIndex] || DRAMA_NAMES[0];
 
-  const res = await fetch(`${DIFY_BASE}/workflows/run`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${API_KEYS.novel}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      inputs: {
-        flower_name:  flowerName,
-        juji:         juji,
-        relationship: _safeRelationship(relationship),
-        direction:    _safeDirection(plotDirection),
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 120000); // 流式给 120 秒
+
+  let res;
+  try {
+    res = await fetch(`${DIFY_BASE}/workflows/run`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${API_KEYS.novel}`,
+        'Content-Type': 'application/json',
       },
-      response_mode: 'streaming',
-      user: _getUserId(),
-    }),
-  });
+      body: JSON.stringify({
+        inputs: {
+          flower_name:  flowerName,
+          juji:         juji,
+          relationship: _safeRelationship(relationship),
+          direction:    _safeDirection(plotDirection),
+        },
+        response_mode: 'streaming',
+        user: _getUserId(),
+      }),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    clearTimeout(timer);
+    if (err.name === 'AbortError') throw new Error('请求超时（超过 120 秒），请稍后重试');
+    throw err;
+  }
 
   if (!res.ok) {
+    clearTimeout(timer);
     const msg = await res.text();
     console.error('[DEBUG stream] sent relationship:', JSON.stringify(_safeRelationship(relationship)), '| direction:', JSON.stringify(_safeDirection(plotDirection)));
     throw new Error(`Workflow 调用失败（${res.status}）：${msg}`);
@@ -312,6 +339,7 @@ async function generateNovelStream({ flowerName, relationship, plotDirection, dr
     }
   }
 
+  clearTimeout(timer);
   // 未收到 workflow_finished 时的兜底
   const fallback = extractVisible(rawText).trim();
   return { success: true, novel: fallback, title: flowerName + '传 · ' + juji + '篇' };
