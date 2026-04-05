@@ -214,7 +214,7 @@
     <video class="bg-video active" autoplay muted playsinline preload="auto">
       <source src="assets/shipin/2.mp4" type="video/mp4">
     </video>
-    <video class="bg-video" muted playsinline preload="none">
+    <video class="bg-video" muted playsinline preload="metadata">
       <source src="assets/shipin/3.mp4" type="video/mp4">
     </video>
     <div class="bg-mask"></div>
@@ -262,19 +262,27 @@
     function switchToVideo(nextIndex) {
       const current = videos[currentVideoIndex];
       const next = videos[nextIndex];
-
-      current.classList.remove('active');
       currentVideoIndex = nextIndex;
-      next.classList.add('active');
-
-      // 直接 play()，视频已提前预加载，无需再 load()
       next.currentTime = 0;
+
+      // 只有 next 真正开始播放后才执行淡入淡出，避免黑屏
+      const doSwitch = () => {
+        next.classList.add('active');
+        // 等淡入淡出过渡完成后再隐藏旧视频（transition 1.5s + 100ms 余量）
+        setTimeout(() => current.classList.remove('active'), 1600);
+      };
+
       const playPromise = next.play();
       if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // 若未预加载完成则等 canplay 后再播
-          next.addEventListener('canplay', () => next.play(), { once: true });
+        playPromise.then(doSwitch).catch(() => {
+          // 未缓冲完成时等 canplay；期间 current 保持可见，不出黑屏
+          next.addEventListener('canplay', () => {
+            next.play().catch(() => {});
+            doSwitch();
+          }, { once: true });
         });
+      } else {
+        doSwitch();
       }
 
       // 再预加载下下个视频
