@@ -217,28 +217,60 @@
       cursor: not-allowed;
     }
 
-    /* ── 生成中遮罩 ── */
+    /* ── 生成中遮罩（流式显示） ── */
     .waiting-overlay {
       display: none;
       position: fixed; inset: 0; z-index: 200;
-      background: rgba(6,4,12,0.92);
+      background: rgba(6,4,12,0.95);
       flex-direction: column;
       align-items: center; justify-content: center;
-      gap: 24px;
+      padding: 48px 24px;
     }
     .waiting-overlay.show { display: flex; }
-    .waiting-spinner {
-      width: 48px; height: 48px;
-      border: 2px solid rgba(200,160,100,0.15);
-      border-top-color: rgba(200,160,100,0.7);
+    .stream-wrap {
+      width: 100%; max-width: 680px;
+      display: flex; flex-direction: column; gap: 20px;
+      height: 80vh;
+    }
+    .stream-header {
+      display: flex; align-items: center; gap: 14px; flex-shrink: 0;
+    }
+    .stream-spinner {
+      width: 18px; height: 18px; flex-shrink: 0;
+      border: 1.5px solid rgba(200,160,100,0.2);
+      border-top-color: rgba(200,160,100,0.75);
       border-radius: 50%;
-      animation: spin 1s linear infinite;
+      animation: spin 0.9s linear infinite;
     }
+    .stream-spinner.done { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .waiting-text {
-      font-size: 15px; letter-spacing: 0.45em;
-      color: rgba(255,240,210,0.55);
+    .stream-status {
+      font-size: 13px; letter-spacing: 0.4em;
+      color: rgba(200,160,100,0.6);
     }
+    .stream-body {
+      flex: 1; overflow-y: auto;
+      font-size: 16px; line-height: 2.1; letter-spacing: 0.08em;
+      color: rgba(255,240,210,0.85);
+      padding: 28px 32px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(200,160,100,0.12);
+      border-radius: 10px;
+      white-space: pre-wrap; word-break: break-all;
+      text-align: justify;
+    }
+    .stream-body::-webkit-scrollbar { width: 4px; }
+    .stream-body::-webkit-scrollbar-track { background: transparent; }
+    .stream-body::-webkit-scrollbar-thumb { background: rgba(200,160,100,0.2); border-radius: 2px; }
+    .stream-cursor {
+      display: inline-block;
+      width: 2px; height: 1em;
+      background: rgba(200,160,100,0.7);
+      vertical-align: text-bottom;
+      margin-left: 2px;
+      animation: blink 0.9s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
     /* ── 登录弹窗 ── */
     .login-modal {
@@ -374,10 +406,15 @@
     </div>
   </div>
 
-  <!-- 生成中遮罩 -->
+  <!-- 生成中遮罩（流式显示） -->
   <div class="waiting-overlay" id="waitingOverlay">
-    <div class="waiting-spinner"></div>
-    <div class="waiting-text">· 同人文生成中，请稍候 ·</div>
+    <div class="stream-wrap">
+      <div class="stream-header">
+        <div class="stream-spinner" id="streamSpinner"></div>
+        <div class="stream-status" id="streamStatus">· 故事正在生成中 ·</div>
+      </div>
+      <div class="stream-body" id="streamBody"><span class="stream-cursor"></span></div>
+    </div>
   </div>
 
   <!-- 登录弹窗 -->
@@ -501,8 +538,12 @@
       const VALID_DIRS = ['爱恋甜蜜', '虐恋错过', '江湖侠义', '自定义'];
       const safePlotValue = VALID_DIRS.includes(plotValue) ? plotValue : '爱恋甜蜜';
 
-      // 显示遮罩
-      const overlay = document.getElementById('waitingOverlay');
+      // 显示流式遮罩
+      const overlay     = document.getElementById('waitingOverlay');
+      const streamBody  = document.getElementById('streamBody');
+      const streamStatus = document.getElementById('streamStatus');
+      const streamSpinner = document.getElementById('streamSpinner');
+      streamBody.innerHTML = '<span class="stream-cursor"></span>';
       overlay.classList.add('show');
       genBtn.disabled = true;
 
@@ -511,17 +552,29 @@
 
       const VALID_RELS = ['竹马', '师徒', '宿敌转恋人', '自定义'];
       const safeRelationship = VALID_RELS.includes(relationship) ? relationship : '竹马';
-      console.log('[step5c] localStorage novelRelationship:', JSON.stringify(relationship), '→ safeRelationship:', JSON.stringify(safeRelationship));
-      console.log('[step5c] plotValue:', JSON.stringify(safePlotValue));
+
+      let accumulated = '';
 
       try {
-        const result = await generateNovel(
-          { flowerName, relationship: safeRelationship, plotDirection: safePlotValue, dramaIndex, characterName }
+        const result = await generateNovelStream(
+          { flowerName, relationship: safeRelationship, plotDirection: safePlotValue, dramaIndex, characterName },
+          (chunk) => {
+            accumulated += chunk;
+            // 打字机效果：文字 + 闪烁光标
+            streamBody.innerHTML = accumulated + '<span class="stream-cursor"></span>';
+            streamBody.scrollTop = streamBody.scrollHeight;
+          }
         );
-        if (!result.success) throw new Error(result.error || '生成失败');
-        localStorage.setItem('generatedNovel', result.novel || '');
+
+        // 生成完成
+        streamSpinner.classList.add('done');
+        streamStatus.textContent = '· 故事已完成，即将跳转 ·';
+        streamBody.innerHTML = accumulated; // 移除光标
+
+        localStorage.setItem('generatedNovel', result.novel || accumulated || '');
         localStorage.setItem('generatedNovelTitle', result.title || '');
-        window.location.href = 'step5_result.html';
+
+        setTimeout(() => { window.location.href = 'step5_result.html'; }, 1200);
       } catch (err) {
         overlay.classList.remove('show');
         genBtn.disabled = false;
