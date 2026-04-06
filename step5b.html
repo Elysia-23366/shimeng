@@ -412,7 +412,7 @@
     // ── 初始化 ──
     const generatedImage = localStorage.getItem('generatedImage') || 'assets/moren.png';
     const flowerName = localStorage.getItem('characterFlowerName') || '云笙';
-    const isLoggedIn = !!localStorage.getItem('userPhone');
+    const isLoggedIn = !!(localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn'));
     let curDrama = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
     let selectedRelation = '';
 
@@ -544,7 +544,7 @@
       const phone = document.getElementById('phoneInput').value.trim();
       const code = document.getElementById('codeInput').value.trim();
       if (!phone || !code) { alert('请填写手机号和验证码'); return; }
-      localStorage.setItem('userPhone', phone);
+      // legacy phone login removed
       document.getElementById('loginModal').style.display = 'none';
       location.reload();
     }

@@ -450,7 +450,7 @@
     const generatedImage = localStorage.getItem('generatedImage') || 'assets/moren.png';
     const flowerName = localStorage.getItem('characterFlowerName') || '云笙';
     const dramaIndex = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
-    const isLoggedIn = !!localStorage.getItem('userPhone');
+    const isLoggedIn = !!(localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn'));
     let curDrama = dramaIndex;
     let selectedCPIndex = -1;
 
@@ -563,7 +563,7 @@
       const phone = document.getElementById('phoneInput').value.trim();
       const code = document.getElementById('codeInput').value.trim();
       if (!phone || !code) { alert('请填写手机号和验证码'); return; }
-      localStorage.setItem('userPhone', phone);
+      // legacy phone login removed
       document.getElementById('loginModal').style.display = 'none';
       location.reload();
     }

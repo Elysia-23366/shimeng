@@ -221,7 +221,7 @@
     const randomNames = ['云笙','芷若','如意','素心','清欢','碧落','流霜','听雪','幽兰','月华','霜华','凌波','飞雪','青岚','暮云','沉香','映雪','落霞','秋水','采薇'];
 
     const generatedImage = localStorage.getItem('generatedImage') || 'assets/moren.png';
-    const isLoggedIn = !!localStorage.getItem('userPhone');
+    const isLoggedIn = !!(localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn'));
     let curDrama = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
 
     document.getElementById('generatedImg').src = generatedImage;
@@ -279,7 +279,7 @@
       const phone = document.getElementById('phoneInput').value.trim();
       const code = document.getElementById('codeInput').value.trim();
       if (!phone || !code) { alert('请填写手机号和验证码'); return; }
-      localStorage.setItem('userPhone', phone);
+      // legacy phone login removed
       document.getElementById('loginModal').style.display = 'none';
       location.reload();
     }

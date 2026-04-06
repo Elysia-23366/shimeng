@@ -394,7 +394,7 @@
     const relationship = localStorage.getItem('novelRelationship') || '竹马';
     const plotDir = localStorage.getItem('novelPlotDirection') || '甜宠';
     const dramaIndex = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
-    const isLoggedIn = !!localStorage.getItem('userPhone');
+    const isLoggedIn = !!(localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn'));
     let isUnlocked = !!localStorage.getItem('novelUnlocked');
     let curDrama = dramaIndex;
 
@@ -509,7 +509,7 @@
       const phone = document.getElementById('phoneInput').value.trim();
       const code = document.getElementById('codeInput').value.trim();
       if (!phone || !code) { alert('请填写手机号和验证码'); return; }
-      localStorage.setItem('userPhone', phone);
+      // legacy phone login removed
       document.getElementById('loginModal').style.display = 'none';
       location.reload();
     }

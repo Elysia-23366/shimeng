@@ -279,7 +279,7 @@
   <script>
     const dramas = ['《长相思》','《梦华录》','《琅琊榜》'];
     const idx = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
-    const isLoggedIn = !!localStorage.getItem('userPhone');
+    const isLoggedIn = !!(localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn'));
     let selectedVersion = 0;
 
     const genImg = localStorage.getItem('generatedImage') || 'assets/moren.png';
@@ -389,7 +389,7 @@
       const phone = document.getElementById('phoneInput').value.trim();
       const code = document.getElementById('codeInput').value.trim();
       if (!phone || !code) { alert('请填写手机号和验证码'); return; }
-      localStorage.setItem('userPhone', phone);
+      // legacy phone login removed
       document.getElementById('loginModal').style.display = 'none';
       location.reload();
     }

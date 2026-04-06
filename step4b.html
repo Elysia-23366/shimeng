@@ -257,7 +257,7 @@
   <!-- 登录弹窗 -->
   <div id="loginModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
     <div style="width:420px;background:rgba(8,5,16,0.97);border:1px solid rgba(200,160,100,0.4);border-radius:12px;padding:40px 36px;position:relative;font-family:'Noto Serif SC','STSong',serif;">
-      <button onclick="closeLoginModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:rgba(200,160,100,0.6);font-size:20px;cursor:pointer;">×</button>
+      <button onclick="document.getElementById('loginModal').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;color:rgba(200,160,100,0.6);font-size:20px;cursor:pointer;">×</button>
       <div style="text-align:center;margin-bottom:28px;">
         <div style="font-size:13px;color:rgba(200,160,100,0.6);letter-spacing:0.3em;margin-bottom:8px;">拾梦录</div>
         <div style="font-size:20px;font-weight:300;color:rgba(255,240,210,0.95);letter-spacing:0.2em;">保存你的古风形象</div>
@@ -265,14 +265,13 @@
       </div>
       <div style="margin-bottom:12px;">
         <div style="display:flex;gap:0;margin-bottom:10px;">
-          <input id="phoneInput" type="tel" placeholder="请输入手机号" maxlength="11" style="flex:1;height:46px;background:rgba(255,255,255,0.04);border:1px solid rgba(200,160,100,0.3);border-right:none;border-radius:6px 0 0 6px;color:rgba(255,240,210,0.9);font-family:inherit;font-size:14px;padding:0 14px;outline:none;" />
+          <input id="emailInput" type="email" placeholder="请输入邮箱地址" style="flex:1;height:46px;background:rgba(255,255,255,0.04);border:1px solid rgba(200,160,100,0.3);border-right:none;border-radius:6px 0 0 6px;color:rgba(255,240,210,0.9);font-family:inherit;font-size:14px;padding:0 14px;outline:none;" />
           <button id="codeBtn" onclick="sendCode()" style="width:110px;height:46px;background:rgba(200,160,100,0.12);border:1px solid rgba(200,160,100,0.3);border-radius:0 6px 6px 0;color:rgba(220,180,120,0.9);font-family:inherit;font-size:13px;cursor:pointer;white-space:nowrap;">获取验证码</button>
         </div>
-        <input type="text" placeholder="请输入验证码" maxlength="6" style="width:100%;height:46px;background:rgba(255,255,255,0.04);border:1px solid rgba(200,160,100,0.3);border-radius:6px;color:rgba(255,240,210,0.9);font-family:inherit;font-size:14px;padding:0 14px;outline:none;" />
+        <input id="codeInput" type="text" placeholder="请输入验证码" maxlength="6" style="width:100%;height:46px;background:rgba(255,255,255,0.04);border:1px solid rgba(200,160,100,0.3);border-radius:6px;color:rgba(255,240,210,0.9);font-family:inherit;font-size:14px;padding:0 14px;outline:none;" />
       </div>
-      <button onclick="doLogin()" style="width:100%;height:50px;background:linear-gradient(135deg,rgba(200,160,100,0.25),rgba(180,120,80,0.2));border:1px solid rgba(220,180,120,0.6);border-radius:6px;color:rgba(255,240,210,0.95);font-family:inherit;font-size:16px;letter-spacing:0.35em;cursor:pointer;margin-bottom:20px;">✦ 登 录 ✦</button>
-      <div style="text-align:center;color:rgba(200,160,100,0.35);font-size:12px;letter-spacing:0.2em;margin-bottom:16px;">——— 或 ———</div>
-      <button onclick="doLogin()" style="width:100%;height:46px;background:rgba(7,193,96,0.15);border:1px solid rgba(7,193,96,0.35);border-radius:6px;color:rgba(7,193,96,0.9);font-family:inherit;font-size:14px;letter-spacing:0.2em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;"><span style="font-size:18px;">💬</span> 微信一键登录</button>
+      <div id="loginTip" style="font-size:12px;color:#e07070;letter-spacing:0.08em;margin-bottom:8px;min-height:18px;text-align:center;"></div>
+      <button id="loginSubmitBtn" onclick="doLogin()" style="width:100%;height:50px;background:linear-gradient(135deg,rgba(200,160,100,0.25),rgba(180,120,80,0.2));border:1px solid rgba(220,180,120,0.6);border-radius:6px;color:rgba(255,240,210,0.95);font-family:inherit;font-size:16px;letter-spacing:0.35em;cursor:pointer;">✦ 登 录 ✦</button>
     </div>
   </div>
 
