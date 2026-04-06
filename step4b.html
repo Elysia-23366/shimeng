@@ -288,7 +288,7 @@
     document.getElementById('dramaName').textContent = dramas[idx] || dramas[0];
 
     // 头像
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const isLoggedIn = !!(localStorage.getItem('userEmail') && localStorage.getItem('isLoggedIn'));
     const photo = localStorage.getItem('userPhoto');
     if (isLoggedIn && photo) {
       document.getElementById('avatarImg').src = photo;

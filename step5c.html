@@ -448,7 +448,7 @@
     const generatedImage = localStorage.getItem('generatedImage') || 'assets/moren.png';
     const flowerName = localStorage.getItem('characterFlowerName') || '云笙';
     const relationship = localStorage.getItem('novelRelationship') || '';
-    const isLoggedIn = !!(localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn'));
+    const isLoggedIn = !!(localStorage.getItem('userEmail') && (localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn')));
     let curDrama = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
     let selectedPlot = '';
 

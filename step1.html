@@ -582,7 +582,7 @@
         localStorage.setItem('selectedDramaIndex', 0);
         window.location.href = 'step2.html';
       };
-      if (localStorage.getItem('isLoggedIn')) {
+      if (localStorage.getItem('isLoggedIn') && localStorage.getItem('userEmail')) {
         go();
       } else {
         openLoginModal(go);

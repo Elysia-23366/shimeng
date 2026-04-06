@@ -450,7 +450,7 @@
     const generatedImage = localStorage.getItem('generatedImage') || 'assets/moren.png';
     const flowerName = localStorage.getItem('characterFlowerName') || '云笙';
     const dramaIndex = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
-    const isLoggedIn = !!(localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn'));
+    const isLoggedIn = !!(localStorage.getItem('userEmail') && (localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn')));
     let curDrama = dramaIndex;
     let selectedCPIndex = -1;
 

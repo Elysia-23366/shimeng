@@ -270,7 +270,7 @@
     const flowerName = localStorage.getItem('characterFlowerName') || '云笙';
     const cpName = localStorage.getItem('selectedCPName') || '';
     const dramaIndex = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
-    const isLoggedIn = !!(localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn'));
+    const isLoggedIn = !!(localStorage.getItem('userEmail') && (localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn')));
     let curDrama = dramaIndex;
 
     // 图片

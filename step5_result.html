@@ -394,7 +394,7 @@
     const relationship = localStorage.getItem('novelRelationship') || '竹马';
     const plotDir = localStorage.getItem('novelPlotDirection') || '甜宠';
     const dramaIndex = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
-    const isLoggedIn = !!(localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn'));
+    const isLoggedIn = !!(localStorage.getItem('userEmail') && (localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn')));
     let isUnlocked = !!localStorage.getItem('novelUnlocked');
     let curDrama = dramaIndex;
 

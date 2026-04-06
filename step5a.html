@@ -221,7 +221,7 @@
     const randomNames = ['云笙','芷若','如意','素心','清欢','碧落','流霜','听雪','幽兰','月华','霜华','凌波','飞雪','青岚','暮云','沉香','映雪','落霞','秋水','采薇'];
 
     const generatedImage = localStorage.getItem('generatedImage') || 'assets/moren.png';
-    const isLoggedIn = !!(localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn'));
+    const isLoggedIn = !!(localStorage.getItem('userEmail') && (localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn')));
     let curDrama = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
 
     document.getElementById('generatedImg').src = generatedImage;
