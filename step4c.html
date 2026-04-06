@@ -291,10 +291,9 @@
 
     // 头像
     const userPhoto = localStorage.getItem('userPhoto');
-    if (isLoggedIn && userPhoto) {
-      document.getElementById('avatarImg').src = userPhoto;
-      document.getElementById('navLoginText').textContent = '';
-    }
+    if (isLoggedIn && userPhoto) { document.getElementById('avatarImg').src = userPhoto; }
+    else { document.getElementById('avatarImg').src = 'assets/touxiang.png'; }
+    document.getElementById('navLoginText').textContent = isLoggedIn ? '' : '未登录';
 
     // 左侧大图
     document.getElementById('mainImg').src = versions[0];

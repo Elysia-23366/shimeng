@@ -384,8 +384,9 @@
     <div class="nav-avatar-wrapper">
       <img class="nav-avatar" id="avatarImg" src="assets/touxiang.png" alt="头像" />
       <div class="avatar-dropdown" id="avatarDropdown">
-        <div class="avatar-dropdown-item">未登录</div>
+        <div class="avatar-dropdown-item" id="navStatusText">未登录</div>
         <div class="avatar-dropdown-item login-btn" id="loginBtn">去登录</div>
+        <div class="avatar-dropdown-item logout-btn" id="logoutBtn" style="display:none;color:#e07070;">退出登录</div>
       </div>
     </div>
   </nav>
@@ -408,6 +409,17 @@
 
 
   <div class="prog"><div class="prog-fill"></div></div>
+
+  <!-- 退出登录确认弹窗 -->
+  <div id="logoutModal" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div style="width:360px;background:rgba(8,5,16,0.97);border:1px solid rgba(200,160,100,0.4);border-radius:12px;padding:36px 32px;font-family:'Noto Serif SC','STSong',serif;text-align:center;">
+      <div style="font-size:15px;color:rgba(255,240,210,0.9);letter-spacing:0.12em;line-height:1.8;margin-bottom:28px;">退出登录后您的记录将不再保留</div>
+      <div style="display:flex;gap:12px;">
+        <button onclick="document.getElementById('logoutModal').style.display='none'" style="flex:1;height:44px;background:rgba(255,255,255,0.05);border:1px solid rgba(200,160,100,0.3);border-radius:6px;color:rgba(200,160,100,0.8);font-family:inherit;font-size:14px;letter-spacing:0.2em;cursor:pointer;">取 消</button>
+        <button onclick="confirmLogout()" style="flex:1;height:44px;background:rgba(180,60,60,0.2);border:1px solid rgba(220,80,80,0.5);border-radius:6px;color:rgba(255,160,160,0.9);font-family:inherit;font-size:14px;letter-spacing:0.2em;cursor:pointer;">确认退出</button>
+      </div>
+    </div>
+  </div>
 
   <!-- 登录弹窗 -->
   <div id="loginModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
@@ -562,6 +574,25 @@
     });
 
     /* ── 头像下拉菜单 ── */
+    function updateNavLoginState() {
+      const loggedIn = !!(localStorage.getItem('isLoggedIn') && localStorage.getItem('userEmail'));
+      const email = localStorage.getItem('userEmail') || '';
+      document.getElementById('navStatusText').textContent = loggedIn ? email : '未登录';
+      loginBtn.style.display = loggedIn ? 'none' : '';
+      document.getElementById('logoutBtn').style.display = loggedIn ? '' : 'none';
+    }
+    updateNavLoginState();
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      avatarDropdown.classList.remove('open');
+      document.getElementById('logoutModal').style.display = 'flex';
+    });
+
+    function confirmLogout() {
+      localStorage.clear();
+      window.location.href = 'step1.html';
+    }
+
     avatarImg.addEventListener('click', (e) => {
       e.stopPropagation();
       avatarDropdown.classList.toggle('open');
@@ -603,6 +634,7 @@
         const d=await r.json();
         if(!r.ok){document.getElementById("loginTip").textContent=d.error||"验证失败";btn.disabled=false;btn.innerHTML="&#10022; 登 录 &#10022;";return;}
         localStorage.setItem("isLoggedIn","true"); localStorage.setItem("userEmail",email);
+        updateNavLoginState();
         document.getElementById("loginModal").style.display="none";
       } catch(e){document.getElementById("loginTip").textContent="网络错误";btn.disabled=false;btn.innerHTML="&#10022; 登 录 &#10022;";}
     }

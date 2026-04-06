@@ -290,11 +290,11 @@
     // 头像
     const isLoggedIn = !!(localStorage.getItem('userEmail') && localStorage.getItem('isLoggedIn'));
     const photo = localStorage.getItem('userPhoto');
+    if (isLoggedIn) { document.getElementById('loginText').style.display = 'none'; }
     if (isLoggedIn && photo) {
       document.getElementById('avatarImg').src = photo;
       document.getElementById('avatarImg').style.display = 'block';
       document.getElementById('defaultIcon').style.display = 'none';
-      document.getElementById('loginText').style.display = 'none';
     }
 
     // 图片

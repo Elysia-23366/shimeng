@@ -425,13 +425,9 @@
 
     // 头像
     const userPhoto = localStorage.getItem('userPhoto');
-    if (isLoggedIn && userPhoto) {
-      document.getElementById('avatarImg').src = userPhoto;
-      document.getElementById('navLoginText').textContent = '';
-    } else {
-      document.getElementById('avatarImg').src = 'assets/touxiang.png';
-      document.getElementById('navLoginText').textContent = '未登录';
-    }
+    if (isLoggedIn && userPhoto) { document.getElementById('avatarImg').src = userPhoto; }
+    else { document.getElementById('avatarImg').src = 'assets/touxiang.png'; }
+    document.getElementById('navLoginText').textContent = isLoggedIn ? '' : '未登录';
 
     // 导航下拉
     const dropBtn = document.getElementById('dropBtn');
