@@ -328,6 +328,27 @@
       to   { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
 
+    /* ─── 移动端适配 ─── */
+    @media (max-width: 768px) {
+      /* 视频上移，让人脸出现在画面中 */
+      .bg-video {
+        object-position: center 15%;
+      }
+
+      /* 导航缩小 */
+      .nav { padding: 0 16px; height: 52px; }
+      .logo-img { height: 48px; }
+      .dropdown-btn { font-size: 13px; padding: 0 14px; height: 32px; }
+
+      /* 角色入口文字缩小，按钮适配 */
+      .center-entry { bottom: 12%; gap: 8px; width: 90%; }
+      .entry-title { font-size: 22px; letter-spacing: 0.25em; }
+      .entry-btn { padding: 0 32px; height: 48px; font-size: 16px; letter-spacing: 0.3em; }
+
+      /* 头像缩小 */
+      .nav-avatar { width: 32px; height: 32px; }
+    }
+
     /* ─── 底部进度条 ─── */
     .prog {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
@@ -352,7 +373,10 @@
 
   <nav class="nav">
     <a class="nav-logo" href="index.html">
-      <img class="logo-img" src="assets/logo.png" alt="拾梦录" />
+      <picture>
+        <source srcset="assets/logo.webp" type="image/webp">
+        <img class="logo-img" src="assets/logo.png" alt="拾梦录" />
+      </picture>
     </a>
 
     <div class="nav-center">
