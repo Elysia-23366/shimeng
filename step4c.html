@@ -346,22 +346,59 @@
     document.getElementById('fullscreen').addEventListener('click', e => { if (e.target !== document.querySelector('#fullscreen img')) document.getElementById('fullscreen').classList.remove('active'); });
     document.getElementById('closeBtn').addEventListener('click', () => { document.getElementById('fullscreen').classList.remove('active'); });
 
-    // 下载
+    // 下载（免费版加水印，付费版无水印）
+    function downloadImage(imgUrl, fileName, addWatermark) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function () {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+
+        if (addWatermark) {
+          const fontSize = Math.max(28, Math.round(img.width / 18));
+          const pad = Math.round(fontSize * 0.7);
+          ctx.font = `${fontSize}px 'Noto Serif SC', 'STSong', serif`;
+          // 描边（阴影）增加可读性
+          ctx.shadowColor = 'rgba(0,0,0,0.6)';
+          ctx.shadowBlur = 12;
+          ctx.lineWidth = fontSize * 0.12;
+          ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+          ctx.strokeText('拾梦AI', pad, img.height - pad);
+          // 主体文字
+          ctx.fillStyle = 'rgba(255,255,255,0.55)';
+          ctx.fillText('拾梦AI', pad, img.height - pad);
+        }
+
+        canvas.toBlob(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 'image/png');
+      };
+      img.onerror = () => {
+        // 跨域失败时直接下载原图
+        const a = document.createElement('a');
+        a.href = imgUrl; a.download = fileName;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      };
+      img.src = imgUrl;
+    }
+
     downloadBtn.addEventListener('click', () => {
       if (selectedTier === 'paid') {
         alert('付费 ¥0.9 解锁高清无水印（演示模式，直接下载）');
       }
-      const fileName = '拾梦录_古风形象_' + (selectedTier === 'paid' ? '高清' : '标清') + '_' + Date.now() + '.png';
-      fetch(genImg).then(r => r.blob()).then(blob => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      });
+      const isPaid = selectedTier === 'paid';
+      const fileName = '拾梦AI_古风形象_' + (isPaid ? '高清' : '标清') + '_' + Date.now() + '.png';
+      downloadImage(genImg, fileName, !isPaid);
     });
 
     // 继续生成同人文 → step5a
