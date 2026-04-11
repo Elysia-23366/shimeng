@@ -356,7 +356,7 @@
 
     <!-- 底部按钮 -->
     <div class="bottom-btns">
-      <button class="unlock-btn" id="unlockBtn">🔒 解锁下一章（功能正在开发中......）</button>
+      <button class="unlock-btn" id="unlockBtn">0.2￥解锁下一章</button>
       <button class="cp-btn" id="cpBtn">继续生成 CP 合照 →</button>
     </div>
   </div>
@@ -453,7 +453,7 @@
 
     // 解锁态（保留渐隐遮罩，换成"下一章锁定"样式）
     function applyUnlocked() {
-      document.getElementById('unlockBtn').textContent = '🔒 解锁下一章（功能正在开发中......）';
+      document.getElementById('unlockBtn').textContent = '0.2￥解锁下一章';
       document.getElementById('unlockBtn').classList.add('unlocked');
       ['copyBtn', 'shareBtn', 'downloadBtn'].forEach(id => {
         document.getElementById(id).classList.remove('disabled');
