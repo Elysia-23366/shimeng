@@ -235,7 +235,7 @@
             <span class="card-check">✓</span>
             <div class="tier-header">
               <span class="tier-badge paid">高清</span>
-              <span class="tier-price"><span class="amount">¥6.6</span></span>
+              <span class="tier-price"><span class="amount">¥0.9</span></span>
             </div>
             <div class="tier-title">1080p 高清无水印</div>
             <div class="tier-desc">无水印高清大图，可下载保存</div>
@@ -328,7 +328,7 @@
       if (selectedTier === 'free') {
         downloadBtn.textContent = '↓ 免费下载 720p';
       } else {
-        downloadBtn.textContent = '↓ ¥6.6 下载高清无水印';
+        downloadBtn.textContent = '↓ ¥0.9 下载高清无水印';
       }
     }
 
@@ -349,7 +349,7 @@
     // 下载
     downloadBtn.addEventListener('click', () => {
       if (selectedTier === 'paid') {
-        alert('付费 ¥6.6 解锁高清无水印（演示模式，直接下载）');
+        alert('付费 ¥0.9 解锁高清无水印（演示模式，直接下载）');
       }
       const fileName = '拾梦录_古风形象_' + (selectedTier === 'paid' ? '高清' : '标清') + '_' + Date.now() + '.png';
       fetch(genImg).then(r => r.blob()).then(blob => {
