@@ -363,16 +363,22 @@
             ctx.drawImage(img, 0, 0);
 
             if (addWatermark) {
-              const fontSize = Math.max(28, Math.round(img.width / 18));
-              const pad = Math.round(fontSize * 0.7);
-              ctx.font = `${fontSize}px 'Noto Serif SC', 'STSong', serif`;
-              ctx.shadowColor = 'rgba(0,0,0,0.6)';
-              ctx.shadowBlur = 12;
-              ctx.lineWidth = fontSize * 0.12;
-              ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+              const fontSize = Math.max(48, Math.round(img.width / 10));
+              const pad = Math.round(fontSize * 0.6);
+              ctx.save();
+              ctx.font = `bold ${fontSize}px 'Microsoft YaHei', 'PingFang SC', 'Noto Serif SC', sans-serif`;
+              // 黑色描边
+              ctx.shadowColor = 'rgba(0,0,0,0.8)';
+              ctx.shadowBlur = fontSize * 0.3;
+              ctx.lineWidth = fontSize * 0.15;
+              ctx.lineJoin = 'round';
+              ctx.strokeStyle = 'rgba(0,0,0,0.7)';
               ctx.strokeText('拾梦AI', pad, img.height - pad);
-              ctx.fillStyle = 'rgba(255,255,255,0.55)';
+              // 白色主体
+              ctx.shadowBlur = 0;
+              ctx.fillStyle = 'rgba(255,255,255,0.75)';
               ctx.fillText('拾梦AI', pad, img.height - pad);
+              ctx.restore();
             }
 
             canvas.toBlob(blob2 => {
