@@ -1,0 +1,8 @@
+{
+  "framework": null,
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://shimeng.asia/api/$1" }
+  ]
+}
