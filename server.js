@@ -319,9 +319,41 @@ app.post('/api/admin/reset-ip', adminAuth, async (req, res) => {
   }
 });
 
-// ── 图片代理（绕过跨域，供前端 Canvas 加水印用）────────────
+// ── Dify API 代理（避免前端直连海外，提升国内访问速度）────────
+// 将 /api/dify/* 的请求透明转发到 api.dify.ai，支持流式响应
 const https = require('https');
 const http  = require('http');
+
+app.use('/api/dify', (req, res) => {
+  const targetPath = '/v1' + req.path;
+  const options = {
+    hostname: 'api.dify.ai',
+    path:     targetPath,
+    method:   req.method,
+    headers:  {
+      'Authorization':  req.headers['authorization'] || '',
+      'Content-Type':   req.headers['content-type']  || 'application/json',
+    },
+  };
+
+  const proxy = https.request(options, (difyRes) => {
+    // 透传状态码和所有响应头（含 SSE 的 text/event-stream）
+    res.writeHead(difyRes.statusCode, {
+      ...difyRes.headers,
+      'Access-Control-Allow-Origin': '*',
+    });
+    difyRes.pipe(res);
+  });
+
+  proxy.on('error', (err) => {
+    if (!res.headersSent) res.status(502).json({ error: 'Dify proxy error', detail: err.message });
+  });
+
+  // 透传请求体（含 multipart 文件上传和 JSON）
+  req.pipe(proxy);
+});
+
+// ── 图片代理（绕过跨域，供前端 Canvas 加水印用）────────────
 
 app.get('/api/proxy-image', (req, res) => {
   const { url } = req.query;

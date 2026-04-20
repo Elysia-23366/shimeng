@@ -16,7 +16,8 @@
  */
 
 // ─── 接口基础地址 ───────────────────────────────────────────
-const DIFY_BASE = 'https://api.dify.ai/v1';
+// 通过后端代理转发 Dify 请求，避免国内用户直连海外 api.dify.ai 卡顿
+const DIFY_BASE = '/api/dify';
 
 // ─── 三个工作流的 API Key ───────────────────────────────────
 const API_KEYS = {
