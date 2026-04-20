@@ -320,24 +320,33 @@ app.post('/api/admin/reset-ip', adminAuth, async (req, res) => {
 });
 
 // ── Dify API 代理（避免前端直连海外，提升国内访问速度）────────
-// 将 /api/dify/* 的请求透明转发到 api.dify.ai，支持流式响应
 const https = require('https');
 const http  = require('http');
 
 app.use('/api/dify', (req, res) => {
   const targetPath = '/v1' + req.path;
+  const contentType = req.headers['content-type'] || '';
+  const isMultipart = contentType.includes('multipart/form-data');
+
+  // 构造转发到 Dify 的请求头
+  const forwardHeaders = {
+    'Authorization': req.headers['authorization'] || '',
+    'Content-Type':  contentType,
+  };
+
+  // multipart 需要保留完整的 boundary 信息，其他头也透传
+  if (req.headers['content-length']) {
+    forwardHeaders['Content-Length'] = req.headers['content-length'];
+  }
+
   const options = {
     hostname: 'api.dify.ai',
     path:     targetPath,
     method:   req.method,
-    headers:  {
-      'Authorization':  req.headers['authorization'] || '',
-      'Content-Type':   req.headers['content-type']  || 'application/json',
-    },
+    headers:  forwardHeaders,
   };
 
   const proxy = https.request(options, (difyRes) => {
-    // 透传状态码和所有响应头（含 SSE 的 text/event-stream）
     res.writeHead(difyRes.statusCode, {
       ...difyRes.headers,
       'Access-Control-Allow-Origin': '*',
@@ -349,8 +358,16 @@ app.use('/api/dify', (req, res) => {
     if (!res.headersSent) res.status(502).json({ error: 'Dify proxy error', detail: err.message });
   });
 
-  // 透传请求体（含 multipart 文件上传和 JSON）
-  req.pipe(proxy);
+  if (isMultipart) {
+    // 文件上传：body 未被 express 解析，直接 pipe 原始流
+    req.pipe(proxy);
+  } else {
+    // JSON 请求：express.json() 已解析 body，重新序列化后发送
+    const body = JSON.stringify(req.body);
+    proxy.setHeader('Content-Length', Buffer.byteLength(body));
+    proxy.write(body);
+    proxy.end();
+  }
 });
 
 // ── 图片代理（绕过跨域，供前端 Canvas 加水印用）────────────
