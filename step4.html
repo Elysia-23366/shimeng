@@ -432,7 +432,7 @@
       });
     });
 
-    const API_BASE = '';  // 同域，走 nginx 代理
+    // API_BASE 来自 config.js（自动检测本地/云端）
 
     function showLimitUI(remaining) {
       document.querySelector('.ink-animation').style.display = 'none';

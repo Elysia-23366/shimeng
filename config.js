@@ -1,23 +1,17 @@
 /**
  * config.js — 逐玉·古风形象生成 · Dify API 接入
- *
- * ⚠️  重要：本地直接双击打开 HTML 会遇到跨域限制（CORS），导致 API 无法调用。
- *     解决方法（二选一，都很简单）：
- *
- *     方法一：VS Code 安装 "Live Server" 插件
- *             右键 index.html → Open with Live Server
- *             浏览器会自动打开 http://127.0.0.1:5500/index.html
- *
- *     方法二：打开 cmd / 终端，进入网页文件夹，运行：
- *             python -m http.server 8080
- *             然后浏览器访问 http://localhost:8080/index.html
- *
- *     两种方法都不需要任何服务器，就在本地电脑上跑。
  */
 
-// ─── 接口基础地址 ───────────────────────────────────────────
+// ─── 接口基础地址（自动检测本地 / 云端）────────────────────
+// 本地直接双击打开 HTML 时，自动连到云端服务器；线上部署时用相对路径。
+const API_BASE = (
+  window.location.protocol === 'file:' ||
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1'
+) ? 'http://43.129.171.166' : '';
+
 // 通过后端代理转发 Dify 请求，避免国内用户直连海外 api.dify.ai 卡顿
-const DIFY_BASE = '/api/dify';
+const DIFY_BASE = API_BASE + '/api/dify';
 
 // ─── 三个工作流的 API Key ───────────────────────────────────
 const API_KEYS = {

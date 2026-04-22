@@ -532,7 +532,7 @@
       const userEmail = localStorage.getItem('userEmail') || '';
       if (userEmail) {
         try {
-          const limitRes = await fetch(`/api/check-email-limit?email=${encodeURIComponent(userEmail)}`);
+          const limitRes = await fetch(API_BASE + `/api/check-email-limit?email=${encodeURIComponent(userEmail)}`);
           const limitData = await limitRes.json();
           if (!limitData.allowed) {
             alert('您的免费生成次数（2次）已用完，感谢体验拾梦录！');
@@ -587,7 +587,7 @@
 
         // 记录本次生成次数
         if (userEmail) {
-          fetch('/api/record-email-generation', {
+          fetch(API_BASE + '/api/record-email-generation', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: userEmail })

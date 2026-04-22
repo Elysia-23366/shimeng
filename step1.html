@@ -447,6 +447,13 @@
   </div>
 
   <script>
+    // 自动检测本地/云端环境
+    const API_BASE = (
+      window.location.protocol === 'file:' ||
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1'
+    ) ? 'http://43.129.171.166' : '';
+
     let _loginCallback = null; // 登录成功后的回调
 
     function openLoginModal(callback) {
@@ -472,7 +479,7 @@
       btn.disabled = true;
       document.getElementById('loginTip').textContent = '';
       try {
-        const res = await fetch('/api/send-email-code', {
+        const res = await fetch(API_BASE + '/api/send-email-code', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email }),
@@ -508,7 +515,7 @@
       btn.disabled = true;
       btn.textContent = '验证中…';
       try {
-        const res = await fetch('/api/verify-email-code', {
+        const res = await fetch(API_BASE + '/api/verify-email-code', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, code }),
