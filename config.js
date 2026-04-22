@@ -103,10 +103,11 @@ async function _uploadPhoto(base64Str, apiKey) {
 }
 
 /**
- * 调用 Dify Workflow（blocking 模式），返回 outputs 对象
- * 默认 90 秒超时，超时后抛错让调用方处理
+ * 调用 Dify Workflow（streaming 模式），持续读取 SSE 事件直到 workflow_finished
+ * 改用 streaming 避免 nginx proxy_read_timeout（60s）因 blocking 等待过久而报 502
+ * 默认 150 秒超时
  */
-async function _runWorkflow(apiKey, inputs, timeoutMs = 90000) {
+async function _runWorkflow(apiKey, inputs, timeoutMs = 150000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -120,14 +121,14 @@ async function _runWorkflow(apiKey, inputs, timeoutMs = 90000) {
       },
       body: JSON.stringify({
         inputs,
-        response_mode: 'blocking',
+        response_mode: 'streaming',   // 流式：Dify 边运行边发 SSE，防止 nginx 超时
         user: _getUserId(),
       }),
       signal: controller.signal,
     });
   } catch (err) {
     if (err.name === 'AbortError') {
-      throw new Error('请求超时（超过 90 秒），请检查网络或稍后重试');
+      throw new Error('生成超时（超过 150 秒），请稍后重试');
     }
     throw err;
   } finally {
@@ -139,15 +140,41 @@ async function _runWorkflow(apiKey, inputs, timeoutMs = 90000) {
     throw new Error(`Workflow 调用失败（${res.status}）：${msg}`);
   }
 
-  const json = await res.json();
+  // 逐行读取 SSE 流，等到 workflow_finished 事件取 outputs
+  const reader  = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
 
-  // Dify 返回结构：{ data: { status, outputs, error } }
-  const data = json.data || json;
-  if (data.status === 'failed') {
-    throw new Error(`Workflow 执行失败：${data.error || '未知错误'}`);
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    const lines = buffer.split('\n');
+    buffer = lines.pop();  // 末尾不完整行留到下一轮
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const jsonStr = line.slice(6).trim();
+      if (!jsonStr || jsonStr === '[DONE]') continue;
+
+      let evt;
+      try { evt = JSON.parse(jsonStr); } catch { continue; }
+
+      if (evt.event === 'workflow_finished') {
+        const data = evt.data || {};
+        if (data.status === 'failed') {
+          throw new Error(`Workflow 执行失败：${data.error || '未知错误'}`);
+        }
+        return data.outputs || {};
+      }
+      if (evt.event === 'error') {
+        throw new Error(`Workflow 错误：${evt.message || '未知错误'}`);
+      }
+    }
   }
 
-  return data.outputs || {};
+  throw new Error('Workflow 未返回结果，请稍后重试');
 }
 
 /**
