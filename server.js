@@ -347,9 +347,14 @@ app.use('/api/dify', (req, res) => {
   };
 
   const proxy = https.request(options, (difyRes) => {
+    const isSSE = (difyRes.headers['content-type'] || '').includes('text/event-stream');
     res.writeHead(difyRes.statusCode, {
       ...difyRes.headers,
       'Access-Control-Allow-Origin': '*',
+      // 告诉 nginx 不要缓冲此响应（SSE 流式必须立即透传）
+      'X-Accel-Buffering': 'no',
+      // SSE 必须禁用 gzip 压缩，否则浏览器收不到分块
+      ...(isSSE ? { 'Content-Encoding': 'identity' } : {}),
     });
     difyRes.pipe(res);
   });
